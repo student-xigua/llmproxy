@@ -18,8 +18,15 @@ def convert_response_to_chat(body: dict) -> dict:
     """将 responses API 格式转换为 chat completions 格式"""
     model = body.get("model", "llama-3.1-8b-instant")
 
-    # 处理 input 字段
-    input_text = body.get("input", "")
+    # 处理 input 字段（可能是字符串或列表）
+    input_data = body.get("input", "")
+    if isinstance(input_data, str):
+        input_text = input_data
+    elif isinstance(input_data, list):
+        # 处理 [{"type": "text", "text": "..."}] 格式
+        input_text = " ".join([item.get("text", "") for item in input_data if item.get("type") == "text"])
+    else:
+        input_text = ""
 
     # 处理 messages 字段
     messages = body.get("messages", [])
