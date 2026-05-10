@@ -64,7 +64,7 @@ async def gemini_proxy(request: Request):
     # 配置 httpx 客户端，使用代理
     httpx_kwargs = {"timeout": 60.0}
     if PROXY_URL:
-        httpx_kwargs["proxies"] = {"https://": PROXY_URL, "http://": PROXY_URL}
+        httpx_kwargs["proxy"] = PROXY_URL
 
     async with httpx.AsyncClient(**httpx_kwargs) as client:
         response = await client.post(url, json=gemini_request)
