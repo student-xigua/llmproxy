@@ -1,23 +1,32 @@
 #!/usr/bin/env python
 import typing
 
-import pydantic
+from fastapi import Request
 from fastapi.routing import APIRouter
 from openai import AsyncClient
 
 router = APIRouter()
 
 
-class ChatArgs(pydantic.BaseModel):
-    api_key: str
-    model: str
-    messages: typing.List[typing.Dict[str, str]]
+def parse_api_key(request: Request) -> str:
+    """从 Authorization header 解析 API key"""
+    auth = request.headers.get("authorization", "")
+    if auth.startswith("Bearer "):
+        return auth[7:]
+    return ""
 
 
-@router.post("/")
-async def _openai_api(args: ChatArgs):
-    client = AsyncClient(api_key=args.api_key)
+@router.post("/chat/completions")
+async def openai_proxy(request: Request):
+    body = await request.json()
+    api_key = parse_api_key(request) or body.get("api_key", "")
+
+    client = AsyncClient(api_key=api_key)
+
     return await client.chat.completions.create(
-        model=args.model,
-        messages=args.messages,
+        model=body.get("model", "gpt-3.5-turbo"),
+        messages=body.get("messages", []),
+        temperature=body.get("temperature"),
+        max_tokens=body.get("max_tokens"),
+        stream=body.get("stream", False),
     )
