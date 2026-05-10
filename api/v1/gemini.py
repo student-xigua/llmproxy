@@ -1,11 +1,14 @@
 #!/usr/bin/env python
-import typing
+import os
 
 from fastapi import Request
 from fastapi.routing import APIRouter
 import httpx
 
 router = APIRouter()
+
+# 从环境变量获取代理地址
+PROXY_URL = os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
 
 
 def parse_api_key(request: Request) -> str:
@@ -55,10 +58,15 @@ async def gemini_proxy(request: Request):
         }
     }
 
-    # 调用 Gemini API (使用 v1 版本)
-    url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
+    # 调用 Gemini API (使用 v1beta 版本)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    # 配置 httpx 客户端，使用代理
+    httpx_kwargs = {"timeout": 60.0}
+    if PROXY_URL:
+        httpx_kwargs["proxies"] = {"https://": PROXY_URL, "http://": PROXY_URL}
+
+    async with httpx.AsyncClient(**httpx_kwargs) as client:
         response = await client.post(url, json=gemini_request)
 
     if response.status_code != 200:
