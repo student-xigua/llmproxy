@@ -15,6 +15,7 @@ def parse_api_key(request: Request) -> str:
 
 
 @router.post("/chat/completions")
+@router.post("/responses")
 async def groq_api(request: Request):
     body = await request.json()
     api_key = parse_api_key(request) or body.get("api_key", "")
