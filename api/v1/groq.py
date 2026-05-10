@@ -19,21 +19,24 @@ def convert_response_to_chat(body: dict) -> dict:
     model = body.get("model", "llama-3.1-8b-instant")
 
     # 处理 input 字段（可能是字符串或列表）
+    input_text = ""
     input_data = body.get("input", "")
-    if isinstance(input_data, str):
+    if isinstance(input_data, str) and input_data:
         input_text = input_data
     elif isinstance(input_data, list):
         # 处理 [{"type": "text", "text": "..."}] 格式
         input_text = " ".join([item.get("text", "") for item in input_data if item.get("type") == "text"])
-    else:
-        input_text = ""
 
     # 处理 messages 字段
     messages = body.get("messages", [])
 
-    # 如果有 input 但没有 messages，构建 messages
-    if input_text and not messages:
+    # 如果有 input，构建 messages
+    if input_text:
         messages = [{"role": "user", "content": input_text}]
+
+    # 如果还是没有 messages，返回错误
+    if not messages:
+        messages = [{"role": "user", "content": ""}]
 
     return {
         "model": model,
