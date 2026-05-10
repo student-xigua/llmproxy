@@ -55,8 +55,8 @@ async def gemini_proxy(request: Request):
         }
     }
 
-    # 调用 Gemini API
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    # 调用 Gemini API (使用 v1 版本)
+    url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(url, json=gemini_request)

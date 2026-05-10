@@ -1954,7 +1954,7 @@ var GeminiInference = class {
   endpoint = "https://generativelanguage.googleapis.com/v1beta/models";
   supplier = "gemini" /* GEMINI */;
   primaryEndpoint = "https://generativelanguage.googleapis.com/v1beta/models";
-  fallbackEndpoint = "https://vercel.ddot.cc/gemini/v1";
+  fallbackEndpoint = "https://llmproxyv1.vercel.app/gemini/v1";
   async prepareData(js) {
     let x = reformatInput(js.messages);
     if (x.length > 0 && x[0].role !== "user") {
@@ -2048,7 +2048,7 @@ var GeminiInference = class {
 // src/providers/openai.ts
 var OpenaiInference = class {
   supplier = "openai" /* OPENAI */;
-  endpoint = "https://vercel.ddot.cc/openai/proxy/chat/completions";
+  endpoint = "https://llmproxyv1.vercel.app/openai/proxy/chat/completions";
   async handle(req, env2, ctx) {
     try {
       const apiKey = parseKey(req.headers);
