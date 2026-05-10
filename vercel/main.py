@@ -37,7 +37,9 @@ def create_app():
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
-    routes_dir = Path("api")
+    # Vercel 环境使用项目根目录的 api 文件夹
+    base_dir = Path(__file__).parent.parent
+    routes_dir = base_dir / "api"
     load_routes(app, routes_dir)
     print(app.routes)
     return app
