@@ -14,11 +14,37 @@ def parse_api_key(request: Request) -> str:
     return ""
 
 
+def convert_response_to_chat(body: dict) -> dict:
+    """将 responses API 格式转换为 chat completions 格式"""
+    model = body.get("model", "llama-3.1-8b-instant")
+
+    # 处理 input 字段
+    input_text = body.get("input", "")
+
+    # 处理 messages 字段
+    messages = body.get("messages", [])
+
+    # 如果有 input 但没有 messages，构建 messages
+    if input_text and not messages:
+        messages = [{"role": "user", "content": input_text}]
+
+    return {
+        "model": model,
+        "messages": messages,
+        "temperature": body.get("temperature"),
+        "max_tokens": body.get("max_tokens"),
+        "stream": body.get("stream", False),
+    }
+
+
 @router.post("/chat/completions")
 @router.post("/responses")
 async def groq_api(request: Request):
     body = await request.json()
     api_key = parse_api_key(request) or body.get("api_key", "")
+
+    # 转换请求格式
+    chat_body = convert_response_to_chat(body)
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(
@@ -27,13 +53,7 @@ async def groq_api(request: Request):
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             },
-            json={
-                "model": body.get("model", "llama-3.1-8b-instant"),
-                "messages": body.get("messages", []),
-                "temperature": body.get("temperature"),
-                "max_tokens": body.get("max_tokens"),
-                "stream": body.get("stream", False),
-            }
+            json=chat_body
         )
 
     return response.json()
